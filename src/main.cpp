@@ -1,13 +1,13 @@
 #include <SPI.h>
-#include <Adafruit_SSD1322.h>
+// #include <Adafruit_SSD1322.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-#include <ani.cpp>
+#include <ani.hpp>
 
-#define TIME_BETWEEN_ANI_FRAMES 100
+#define TIME_BETWEEN_ANI_FRAMES 40 
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTimeCharacteristic = NULL;
@@ -227,11 +227,12 @@ void setup()
   display.clearDisplay();
   display.display();
 
-  for (auto img : epd_bitmap_allArray)
+  for (auto img : ani_array)
   {
     display.drawBitmap(0, 0, img, 256, 64, SSD1322_WHITE);
     display.display();
     delay(TIME_BETWEEN_ANI_FRAMES);
+    display.clearDisplay();
   }
 
   delay(TIME_BETWEEN_ANI_FRAMES * 3);
