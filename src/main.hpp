@@ -7,6 +7,11 @@
 
 #define TIME_BETWEEN_ANI_FRAMES 50
 
+struct CompressedFrame {
+    const unsigned char* data;
+    size_t size;
+};
+
 BLEServer *pServer = NULL;
 BLECharacteristic *pTimeCharacteristic = NULL;
 BLECharacteristic *pStatusCharacteristic = NULL;

@@ -12,12 +12,16 @@ def rle_encode(bitmap):
             # Split the encoding into multiple segments if count exceeds 255
             if count == 256:
                 compressed.append(255)
-                compressed.append(0)
+                compressed.append(bitmap[i])
                 count = 1
         else:
-            compressed.append(count)
+            if count > 0:
+                compressed.append(count)
+                compressed.append(bitmap[i-1])
             count = 1
-    compressed.append(count)  # Add the last run
+    if count > 0:
+        compressed.append(count)
+        compressed.append(bitmap[-1])
     return compressed
 
 def convert_image_to_rle(image_path):
@@ -35,18 +39,24 @@ def main():
     image_sequence_folder = 'images'
     output_file = 'compressed_images.hpp'
     
+    frame_arrays = []
+    
     with open(output_file, 'w') as cpp_file:
-        cpp_file.write('#include <vector>\n#include <main.hpp>\n')
-        cpp_file.write('std::vector<std::vector<uint8_t>> PROGMEM compressed_images = {\n')
+        cpp_file.write('#include <vector>\n#include <array>\n#include <main.hpp>\n\n')
         
-        for image_name in sorted(os.listdir(image_sequence_folder)):
+        for index, image_name in enumerate(sorted(os.listdir(image_sequence_folder))):
             if image_name.endswith(('.png', '.jpg', '.jpeg')):
                 image_path = os.path.join(image_sequence_folder, image_name)
                 compressed = convert_image_to_rle(image_path)
-                cpp_file.write('    {')  # Start a new compressed image array
+                frame_name = f"frame_{index}"
+                frame_arrays.append((frame_name, len(compressed)))
+                cpp_file.write(f'const unsigned char {frame_name}[] PROGMEM = ' + '{')
                 cpp_file.write(', '.join(f'0x{length:02x}' for length in compressed))
-                cpp_file.write('},\n')
+                cpp_file.write('};\n')
         
+        # Write the array of all frames
+        cpp_file.write('CompressedFrame all_frames[] PROGMEM = {')
+        cpp_file.write(', '.join(f'{{ {frame[0]}, {frame[1]} }}' for frame in frame_arrays))
         cpp_file.write('};\n')
         
     print(f"Compressed images have been written to {output_file}")

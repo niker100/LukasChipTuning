@@ -1,35 +1,43 @@
-#include <ani.hpp>
-// #include <animations/compressed_images.hpp>
+// #include <ani.hpp>
+#include <animations/compressed_images.hpp>
+#include <any>
+#include <type_traits>
+#include <utility>
 
-void decompressRLE(const std::vector<uint8_t>& compressedImage, std::vector<uint8_t>& decompressedBitmap) {
-    decompressedBitmap.clear();
-    uint8_t currentByte = 0; // To accumulate bits for the current byte
-    int bitPosition = 7; // Start from the MSB
-    uint8_t color = 0; // Start with black
+unsigned char* decompressRLE(const unsigned char* compressedImage, size_t compressedSize) {
+  size_t decompressedIndex = 0; // Index for writing to decompressedBitmap
+  unsigned char currentByte = 0; // To accumulate bits for the current byte
+  int bitPosition = 7; // Start from the MSB
+  uint8_t color = 0; // Start with black
+  unsigned char* decompressedBitmap = new unsigned char[256 * 64 / 8]; // Allocate memory for the decompressed image
 
-    for (const auto& count : compressedImage) {
-        for (int i = 0; i < count; ++i) {
-            // Set the bit at the current position to the color
-            if (color == 1) {
-                currentByte |= (1 << bitPosition);
-            } // No need to set for black (0) as bits are initialized to 0
+  for (size_t i = 0; i < compressedSize; i++) {
+    unsigned char count = compressedImage[i];
 
-            bitPosition--;
+    for (int j = 0; j < count; j++) {
+      // Set the bit at the current position to the color
+      if (color == 1) {
+        currentByte |= (1 << bitPosition);
+      } // No need to set for black (0) as bits are initialized to 0
 
-            // If the byte is filled, add it to the vector and reset
-            if (bitPosition < 0) {
-                decompressedBitmap.push_back(currentByte);
-                currentByte = 0; // Reset for the next byte
-                bitPosition = 7; // Reset bit position
-            }
-        }
-        color = 1 - color; // Alternate color
+      bitPosition--;
+
+      // If the byte is filled, add it to the vector and reset
+      if (bitPosition < 0) {
+        decompressedBitmap[decompressedIndex++] = currentByte;
+        currentByte = 0; // Reset for the next byte
+        bitPosition = 7; // Reset bit position
+      }
     }
+    color = 1 - color; // Toggle color
+  }
 
-    // Add the last byte if it was being filled
-    if (bitPosition != 7) {
-        decompressedBitmap.push_back(currentByte);
-    }
+  // Add the last byte if it was being filled
+  if (bitPosition != 7) {
+    decompressedBitmap[decompressedIndex++] = currentByte;
+  }
+  Serial.println(decompressedIndex);
+  return decompressedBitmap;
 }
 
 void setup()
@@ -88,21 +96,23 @@ void setup()
   display.clearDisplay();
   display.display();
 
-  // std::vector<uint8_t> imgData;
-  // for (auto compr : compressed_images) {
-  //   decompressRLE(compr, imgData);
-  //   display.drawBitmap(0, 0, imgData.data(), 256, 64, SSD1322_WHITE);
-  //   display.display();
-  //   delay(TIME_BETWEEN_ANI_FRAMES);
-  //   display.clearDisplay();
-  // }
 
-  for (auto ani : epd_bitmap_allArray) {
-    display.drawBitmap(0, 0, ani, 256, 64, SSD1322_WHITE);
+  for (CompressedFrame compr : all_frames) {
+    size_t size = compr.size;
+    const unsigned char* comprImage = compr.data;
+    auto imgData = decompressRLE(comprImage, size);
+    display.drawBitmap(0, 0, imgData, 256, 64, SSD1322_WHITE);
     display.display();
     delay(TIME_BETWEEN_ANI_FRAMES);
     display.clearDisplay();
   }
+
+  // for (auto ani : epd_bitmap_allArray) {
+  //   display.drawBitmap(0, 0, ani, 256, 64, SSD1322_WHITE);
+  //   display.display();
+  //   delay(TIME_BETWEEN_ANI_FRAMES);
+  //   display.clearDisplay();
+  // }
 
   delay(TIME_BETWEEN_ANI_FRAMES * 3);
 
