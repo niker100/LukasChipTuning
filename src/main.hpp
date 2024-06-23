@@ -5,7 +5,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-#define TIME_BETWEEN_ANI_FRAMES 40
+#define TIME_BETWEEN_ANI_FRAMES 50
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTimeCharacteristic = NULL;

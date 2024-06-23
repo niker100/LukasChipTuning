@@ -1,4 +1,36 @@
 #include <ani.hpp>
+// #include <animations/compressed_images.hpp>
+
+void decompressRLE(const std::vector<uint8_t>& compressedImage, std::vector<uint8_t>& decompressedBitmap) {
+    decompressedBitmap.clear();
+    uint8_t currentByte = 0; // To accumulate bits for the current byte
+    int bitPosition = 7; // Start from the MSB
+    uint8_t color = 0; // Start with black
+
+    for (const auto& count : compressedImage) {
+        for (int i = 0; i < count; ++i) {
+            // Set the bit at the current position to the color
+            if (color == 1) {
+                currentByte |= (1 << bitPosition);
+            } // No need to set for black (0) as bits are initialized to 0
+
+            bitPosition--;
+
+            // If the byte is filled, add it to the vector and reset
+            if (bitPosition < 0) {
+                decompressedBitmap.push_back(currentByte);
+                currentByte = 0; // Reset for the next byte
+                bitPosition = 7; // Reset bit position
+            }
+        }
+        color = 1 - color; // Alternate color
+    }
+
+    // Add the last byte if it was being filled
+    if (bitPosition != 7) {
+        decompressedBitmap.push_back(currentByte);
+    }
+}
 
 void setup()
 {
@@ -56,19 +88,23 @@ void setup()
   display.clearDisplay();
   display.display();
 
-  for (auto img : ani_array)
-  {
-    display.drawBitmap(0, 0, img, 256, 64, SSD1322_WHITE);
+  // std::vector<uint8_t> imgData;
+  // for (auto compr : compressed_images) {
+  //   decompressRLE(compr, imgData);
+  //   display.drawBitmap(0, 0, imgData.data(), 256, 64, SSD1322_WHITE);
+  //   display.display();
+  //   delay(TIME_BETWEEN_ANI_FRAMES);
+  //   display.clearDisplay();
+  // }
+
+  for (auto ani : epd_bitmap_allArray) {
+    display.drawBitmap(0, 0, ani, 256, 64, SSD1322_WHITE);
     display.display();
     delay(TIME_BETWEEN_ANI_FRAMES);
     display.clearDisplay();
   }
 
   delay(TIME_BETWEEN_ANI_FRAMES * 3);
-
-  display.drawBitmap(96, 0, epd_bitmap_prneracng, 64, 64, SSD1322_WHITE);
-  display.display();
-  delay(5000);
 
   time(&now);
   setenv("TZ", "EST5EDT,M3.2.0/2,M11.1.0", 1);
