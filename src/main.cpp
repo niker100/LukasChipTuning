@@ -1,8 +1,5 @@
 // #include <ani.hpp>
 #include <animations/compressed_images.hpp>
-#include <any>
-#include <type_traits>
-#include <utility>
 
 unsigned char* decompressRLE(const unsigned char* compressedImage, size_t compressedSize) {
   size_t decompressedIndex = 0; // Index for writing to decompressedBitmap
