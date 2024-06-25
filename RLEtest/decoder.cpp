@@ -49,7 +49,7 @@ void emulateScreenOnTerminal(const unsigned char* bitmap, size_t width, size_t h
             for (int bit = 7; bit >= 0; bit--) {
                 // Extract each bit from the byte (0 for black, 1 for white)
                 unsigned char pixel = (byte >> bit) & 1;
-                output += (pixel ? 'x' : ' '); // Accumulate the pixel representation
+                output += (pixel ? '#' : ' '); // Accumulate the pixel representation
             }
         }
         output += '\n'; // New line at the end of each row
@@ -61,14 +61,18 @@ int main() {
     size_t compressedSize;
     const unsigned char* compressedImage;
     unsigned char* decompressedBitmap;
+    int compressedSizeTotal = 0;
+    int uncompressedSizeTotal = 0;
     for(CompressedFrame compr : all_frames) {
         
         //system("cls"); 
         std::cout << "\033[H";
 
         compressedSize = compr.size;
+        compressedSizeTotal += compressedSize;
         compressedImage = compr.data;
         decompressedBitmap = decompressRLETest(compressedImage, compressedSize);
+        uncompressedSizeTotal += 256 * 64 / 8;
         emulateScreenOnTerminal(decompressedBitmap, 256, 64);
         
         
@@ -77,5 +81,7 @@ int main() {
         
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+
+    std::cout << "\n\n\n\nSize when compressed: " << compressedSizeTotal << " , uncompressed: " << uncompressedSizeTotal << " , Ratio: " << ((float)compressedSizeTotal/uncompressedSizeTotal) << std::endl;
     return 0;
 }
