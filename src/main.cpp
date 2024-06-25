@@ -33,7 +33,6 @@ unsigned char* decompressRLE(const unsigned char* compressedImage, size_t compre
   if (bitPosition != 7) {
     decompressedBitmap[decompressedIndex++] = currentByte;
   }
-  Serial.println(decompressedIndex);
   return decompressedBitmap;
 }
 
@@ -93,15 +92,16 @@ void setup()
   display.clearDisplay();
   display.display();
 
-
   for (CompressedFrame compr : all_frames) {
     size_t size = compr.size;
     const unsigned char* comprImage = compr.data;
-    auto imgData = decompressRLE(comprImage, size);
+    unsigned char* imgData = decompressRLE(comprImage, size);
     display.drawBitmap(0, 0, imgData, 256, 64, SSD1322_WHITE);
     display.display();
+    free(imgData);
     delay(TIME_BETWEEN_ANI_FRAMES);
     display.clearDisplay();
+    Serial.println(ESP.getFreeHeap());
   }
 
   // for (auto ani : epd_bitmap_allArray) {
