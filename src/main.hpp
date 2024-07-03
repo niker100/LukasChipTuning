@@ -57,14 +57,3 @@ struct tm timeinfo;
 #define TIME_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 #define STATUS_UUID "6841b1b3-3f7b-4b6f-9e0f-2f1b3d1b3b3b"
 
-class Callbacks : public BLECharacteristicCallbacks
-{
-    void onWrite(BLECharacteristic *pCharacteristic) {};
-};
-
-class ServerCallbacks : public BLEServerCallbacks
-{
-    void onConnect(BLEServer *pServer) {};
-
-    void onDisconnect(BLEServer *pServer) {};
-};

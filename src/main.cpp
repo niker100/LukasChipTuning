@@ -1,5 +1,7 @@
 // #include <ani.hpp>
 #include <animations/compressed_images.hpp>
+//#include <callbacks.hpp>
+
 
 unsigned char* decompressRLE(const unsigned char* compressedImage, size_t compressedSize) {
   size_t decompressedIndex = 0; // Index for writing to decompressedBitmap
@@ -74,8 +76,9 @@ void setup()
   pServer->getAdvertising()->start();
 
   pStatusCharacteristic->setValue("Disconnected");
-  pTimeCharacteristic->setCallbacks(new Callbacks());
-  pStatusCharacteristic->setCallbacks(new Callbacks());
+  auto callbacks = new Callbacks();
+  pTimeCharacteristic->setCallbacks(callbacks);
+  pStatusCharacteristic->setCallbacks(callbacks);
 
   if (!display.begin(0x3D))
   {
@@ -101,7 +104,6 @@ void setup()
     free(imgData);
     delay(TIME_BETWEEN_ANI_FRAMES);
     display.clearDisplay();
-    Serial.println(ESP.getFreeHeap());
   }
 
   // for (auto ani : epd_bitmap_allArray) {

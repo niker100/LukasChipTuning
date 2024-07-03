@@ -40,7 +40,7 @@ def main():
     frame_arrays = []
     
     with open(output_file, 'w') as cpp_file:
-        cpp_file.write('#include <main.hpp>\n\n')
+        cpp_file.write('#include <callbacks.hpp>\n\n')
         
         for index, image_name in enumerate(sorted(os.listdir(image_sequence_folder))):
             if image_name.endswith(('.png', '.jpg', '.jpeg')):
